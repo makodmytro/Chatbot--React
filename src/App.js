@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Card, CardContent, Grid, TextField } from "@mui/material";
+import Message from "./components/Message";
+
+import axios from "axios";
+
+const baseURL = "https://chatbotreact.b4a.app/";
 
 function App() {
 
@@ -17,7 +22,15 @@ function App() {
             }
         ]);
 
-        // TODO: post the request to Back4app
+        axios.post(baseURL + "ask", {
+            content: content
+        }).then(res => {
+            console.log(res);
+            setMessages(prevState => [
+              ...prevState,
+              res.data,
+            ]);
+        });
     }
 
     const handleSubmit = (event) => {
@@ -26,6 +39,18 @@ function App() {
         sendMessage(messageInput);
         setMessageInput("");
     }
+
+    useEffect(() => {
+        axios.get(baseURL).then(res => {
+            setMessages([
+            res.data,
+            ])
+        })
+    }, []);
+
+    useEffect(() => {
+        messagesListRef.current.scrollTop = messagesListRef.current.scrollHeight;
+    }, [messagesListRef, messages]);
 
     return (
         <Grid
@@ -45,7 +70,16 @@ function App() {
                         }}
                     >
                         <Box sx={{ m: 1, mr: 2 }}>
-                            {/* TODO: messages will be displayed here */}
+                            {messages.map((message, index) => (
+                                <Message
+                                    key={index}
+                                    content={message.content}
+                                    image={message.image}
+                                    isCustomer={message.isCustomer}
+                                    choices={message.choices}
+                                    handleChoice={sendMessage}
+                                />
+                            ))}
                         </Box>
                     </Box>
                     <Box
