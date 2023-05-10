@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Card, CardContent, Grid, TextField } from "@mui/material";
 import Message from "./components/Message";
-
 import axios from "axios";
 
-const baseURL = "https://chatbotreact.b4a.app/";
-
 function App() {
-
+    const baseURL = "https://chatbot.b4a.app/";
     const messagesListRef = React.createRef();
     const [messageInput, setMessageInput] = useState("");
     const [messages, setMessages] = useState([]);
+
+    useEffect(() => {
+        axios.get(baseURL).then(res => {
+          setMessages([
+            res.data,
+          ])
+        })
+    }, []);
+
+    useEffect(() => {
+        messagesListRef.current.scrollTop = messagesListRef.current.scrollHeight;
+      }, [messagesListRef, messages]);
 
     const sendMessage = (content) => {
         // add the message to the state
@@ -24,11 +33,11 @@ function App() {
 
         axios.post(baseURL + "ask", {
             content: content
-        }).then(res => {
-            console.log(res);
-            setMessages(prevState => [
-              ...prevState,
-              res.data,
+            }).then(res => {
+                console.log(res);
+                setMessages(prevState => [
+                ...prevState,
+                res.data,
             ]);
         });
     }
@@ -39,18 +48,6 @@ function App() {
         sendMessage(messageInput);
         setMessageInput("");
     }
-
-    useEffect(() => {
-        axios.get(baseURL).then(res => {
-            setMessages([
-            res.data,
-            ])
-        })
-    }, []);
-
-    useEffect(() => {
-        messagesListRef.current.scrollTop = messagesListRef.current.scrollHeight;
-    }, [messagesListRef, messages]);
 
     return (
         <Grid
@@ -70,16 +67,18 @@ function App() {
                         }}
                     >
                         <Box sx={{ m: 1, mr: 2 }}>
-                            {messages.map((message, index) => (
-                                <Message
-                                    key={index}
-                                    content={message.content}
-                                    image={message.image}
-                                    isCustomer={message.isCustomer}
-                                    choices={message.choices}
-                                    handleChoice={sendMessage}
-                                />
-                            ))}
+                            {
+                                messages.map((message, index) => (
+                                    <Message
+                                        key={index}
+                                        content={message.content}
+                                        image={message.image}
+                                        isCustomer={message.isCustomer}
+                                        choices={message.choices}
+                                        handleChoice={sendMessage}
+                                    />
+                                ))
+                            }
                         </Box>
                     </Box>
                     <Box
